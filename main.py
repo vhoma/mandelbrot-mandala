@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button, RadioButtons
 import numpy as np
+import math
+import random
 
 # defaults
 center = (0, 0)
@@ -16,8 +18,28 @@ factor0 = 2
 factor_min = 2
 factor_max = 200
 
-fig, ax = plt.subplots(figsize=(7, 7))
-plt.subplots_adjust(left=0.175, right=0.825, bottom=0.25)
+function0 = "multiply"
+function_options = ('multiply', 'power', 'exp', 'random', 'avg', 'fib')
+
+def fib(nr):
+    return int(((1 + math.sqrt(5)) / 2) ** nr / math.sqrt(5) + 0.5)
+
+def get_value(val, factor, function):
+    if function == "multiply":
+        return val * factor
+    elif function == "power":
+        return val ^ factor
+    elif function == "exp":
+        return factor ^ val
+    elif function == "random":
+        return random.randint(1, factor)
+    elif function == "avg":
+        return int((val + factor) / 2)
+    elif function == "fib":
+        return fib(val)
+
+fig, ax = plt.subplots(figsize=(6.8, 6.8))
+plt.subplots_adjust(left=0.28, right=0.93, bottom=0.25)
 plt.axis([
     center[0] - radius - 0.2,
     center[0] + radius + 0.2,
@@ -25,7 +47,7 @@ plt.axis([
     center[1] + radius + 0.2
 ])
 
-def draw(num_dots, factor, axes):
+def draw(num_dots, factor, function, axes):
     # add main circle
     circle1 = plt.Circle(center, radius, color='blue', fill=False)
     axes.add_artist(circle1)
@@ -42,30 +64,36 @@ def draw(num_dots, factor, axes):
     # add dots connections
     for i in range(len(dots)):
         d0 = dots[i]
-        d1 = dots[(i * factor) % num_dots]
+        value = get_value(i, factor, function)
+        d1 = dots[value % num_dots]
         axes.plot([d0[0], d1[0]],[d0[1], d1[1]],'g')
         
-draw(num_dots0, factor0, ax)
+draw(num_dots0, factor0, function0, ax)
 
 ################
 # Set controls #
 ################
 axcolor = 'lightgoldenrodyellow'
 
-# Sliders
+# Sliders and radio buttons to switch function
 ax_numdots = plt.axes([0.175, 0.1, 0.65, 0.03], facecolor=axcolor)
 ax_factor = plt.axes([0.175, 0.15, 0.65, 0.03], facecolor=axcolor)
 slider_numdots = Slider(ax_numdots, 'NumDots', num_dots_min, num_dots_max, valinit=num_dots0, valfmt='%0.0f')
 slider_factor = Slider(ax_factor, 'Factor', factor_min, factor_max, valinit=factor0, valfmt='%0.0f')
 
+rax = plt.axes([0.025, 0.5, 0.15, 0.15], facecolor=axcolor)
+radio = RadioButtons(rax, function_options, active=0)
+
 def update(val):
     ax.clear()
+    f = radio.value_selected
     num_dots = slider_numdots.val
     factor = slider_factor.val
-    draw(int(num_dots), int(factor), ax)
+    draw(int(num_dots), int(factor), f, ax)
     fig.canvas.draw()
 slider_numdots.on_changed(update)
 slider_factor.on_changed(update)
+radio.on_clicked(update)
 
 # +/- buttons
 numdots_plus1_ax = plt.axes([0.880, 0.1, 0.03, 0.03])
@@ -107,7 +135,6 @@ def factor_minus1(event):
         new_val = slider_factor.valmin
     slider_factor.set_val(new_val)
 button_factor_minus1.on_clicked(factor_minus1)
-
 
 # reset button
 resetax = plt.axes([0.725, 0.025, 0.1, 0.04])
