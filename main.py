@@ -19,14 +19,30 @@ factor_min = 2
 factor_max = 200
 
 function0 = "multiply"
-function_options = ('multiply', 'power', 'exp', 'random', 'avg', 'fib')
+function_options = ('multiply', 'add', 'power', 'exp', 'random', 'avg', 'fib', 'lcm', 'gcd', 'division_reminder')
 
 def fib(nr):
     return int(((1 + math.sqrt(5)) / 2) ** nr / math.sqrt(5) + 0.5)
+    
+def gcd(x, y):
+   """This function implements the Euclidian algorithm
+   to find G.C.D. of two numbers"""
+   while(y):
+       x, y = y, x % y
+   return x
+
+# define lcm function
+def lcm(x, y):
+   """This function takes two
+   integers and returns the L.C.M."""
+   lcm = (x*y)//gcd(x,y)
+   return lcm
 
 def get_value(val, factor, function):
     if function == "multiply":
         return val * factor
+    elif function == "add":
+        return val + factor
     elif function == "power":
         return val ^ factor
     elif function == "exp":
@@ -37,6 +53,12 @@ def get_value(val, factor, function):
         return int((val + factor) / 2)
     elif function == "fib":
         return fib(val)
+    elif function == "lcm":
+        return lcm(val, factor)
+    elif function == "gcd":
+        return gcd(val, factor)
+    elif function == "division_reminder":
+        return val % factor
 
 fig, ax = plt.subplots(figsize=(6.8, 6.8))
 plt.subplots_adjust(left=0.28, right=0.93, bottom=0.25)
